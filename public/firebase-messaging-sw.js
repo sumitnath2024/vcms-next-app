@@ -6,7 +6,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.8.0/firebase-messaging-comp
 
 // 2. Initialize the Firebase app in the service worker
 firebase.initializeApp({
-  apiKey: "AIzaSyCx0Lgz7NhLpwtlDHRyF7Ui3EBlS_1HsqI",
+  apiKey: "AIzaSyAT-W2NJ8aGp5ArcldIH9UzoVPlAtcENDM",  
   authDomain: "vcms-fa31a.firebaseapp.com",
   projectId: "vcms-fa31a",
   storageBucket: "vcms-fa31a.firebasestorage.app",

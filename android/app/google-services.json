@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "728229728360",
+    "project_id": "vcms-fa31a",
+    "storage_bucket": "vcms-fa31a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:728229728360:android:0ee1b69593dd1859122bdd",
+        "android_client_info": {
+          "package_name": "com.vivekanandachildsmission.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "728229728360-sk3dgtojp7to0ijsmcv65qac53ol863r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vivekanandachildsmission.app",
+            "certificate_hash": "c76dcfdd55eb1cffa4c9e5ed18abbec698a6d608"
+          }
+        },
+        {
+          "client_id": "728229728360-k39immofroc1f5thuu1n7292s2ucrsc0.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDfx73cVGwO5dZlqT2rmNtkkWG8icr7dKg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "728229728360-k39immofroc1f5thuu1n7292s2ucrsc0.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

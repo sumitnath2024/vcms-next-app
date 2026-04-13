@@ -1,0 +1,9 @@
+@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Add this at the bottom */
+.grecaptcha-badge {
+    visibility: hidden !important;
+}

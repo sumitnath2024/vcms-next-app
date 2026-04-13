@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">VCM</string>
+    <string name="title_activity_main">VCM</string>
+    <string name="package_name">com.vivekanandachildsmission.app</string>
+    <string name="custom_url_scheme">com.vivekanandachildsmission.app</string>
+</resources>

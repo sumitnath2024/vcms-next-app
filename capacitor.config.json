@@ -1,0 +1,41 @@
+{
+  "appId": "com.vivekanandachildsmission.app",
+  "appName": "VCM School",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false
+    },
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "launchAutoHide": true,
+      "backgroundColor": "#ffffff",
+      "androidSplashResourceName": "splash",
+      "androidScaleType": "CENTER_CROP",
+      "showSpinner": true,
+      "androidSpinnerStyle": "large",
+      "iosSpinnerStyle": "small",
+      "spinnerColor": "#999999",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "GoogleSignIn": {
+      "clientId": "728229728360-k39immofroc1f5thuu1n7292s2ucrsc0.apps.googleusercontent.com",
+      "scopes": [
+        "profile",
+        "email",
+        "https://www.googleapis.com/auth/calendar.events"
+      ]
+    }
+  },
+"server": {
+    "url": "https://vivekanandachildsmission.org.in/login",
+    "cleartext": true,
+    "allowNavigation": [
+      "vivekanandachildsmission.org.in",
+      "*.vivekanandachildsmission.org.in"
+    ]
+  },
+  "overrideUserAgent": "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Mobile Safari/537.36"
+}

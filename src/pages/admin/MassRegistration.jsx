@@ -37,6 +37,7 @@ const MassRegistration = () => {
     let baseData = {
       [idField]: d[idField] || '',
       firstName: d.firstName || '',
+      middleName: d.middleName || '', // <-- ADDED MIDDLE NAME
       lastName: d.lastName || '',
       email: d.email || '',
       contactNumber: d.contactNumber || '',
@@ -87,10 +88,17 @@ const MassRegistration = () => {
   const buildFirestoreDataFromExcel = (row, role) => {
     const safeStr = (val) => (val !== undefined && val !== null) ? String(val).trim() : '';
     
+    // Properly format full name by ignoring empty middle names
+    const fName = safeStr(row.firstName);
+    const mName = safeStr(row.middleName);
+    const lName = safeStr(row.lastName);
+    const fullName = [fName, mName, lName].filter(Boolean).join(' '); // <-- ADDED MIDDLE NAME LOGIC
+
     let data = {
-      firstName: safeStr(row.firstName),
-      lastName: safeStr(row.lastName),
-      name: `${safeStr(row.firstName)} ${safeStr(row.lastName)}`.trim(),
+      firstName: fName,
+      middleName: mName, // <-- ADDED MIDDLE NAME
+      lastName: lName,
+      name: fullName, 
       email: safeStr(row.email), // Optional personal email
       gender: safeStr(row.gender),
       dob: safeStr(row.dob),

@@ -112,44 +112,53 @@ const AddProfile = () => {
     fetchSessions();
   }, []);
 
-  // 2. AUTO-GENERATE REGISTRATION NUMBER
+  // 2. AUTO-GENERATE FORMATTED REGISTRATION NUMBER (e.g. STU-2026-0001)
   useEffect(() => {
     const generateId = async () => {
       try {
-        const d = new Date();
-        const yyyy = d.getFullYear();
-        const mm = String(d.getMonth() + 1).padStart(2, '0');
-        const dd = String(d.getDate()).padStart(2, '0');
-        const prefix = `${yyyy}${mm}${dd}`;
         const idField = role === 'Student' ? 'admissionNo' : 'employeeId';
+        const currentYear = new Date().getFullYear();
 
-        const roleSuffixMap = {
-          'Student': 'S',
-          'Teacher': 'T',
-          'Admin': 'A'
+        // Set a readable prefix based on the role
+        const rolePrefixMap = {
+          'Student': 'STU',
+          'Teacher': 'TCH',
+          'Admin': 'ADM'
         };
-        const suffix = roleSuffixMap[role] || '';
+        const prefixBase = rolePrefixMap[role] || 'USR';
+        
+        // Full search pattern e.g., "STU-2026-"
+        const searchPrefix = `${prefixBase}-${currentYear}-`;
 
+        // Query database for all IDs starting with this exact year's prefix
         const q = query(
           collection(db, 'users'),
-          where(idField, '>=', `${prefix}-`),
-          where(idField, '<=', `${prefix}-\uf8ff`)
+          where(idField, '>=', searchPrefix),
+          where(idField, '<=', `${searchPrefix}\uf8ff`)
         );
         
         const snap = await getDocs(q);
-        let maxSerial = 0;
+        
+        let maxSerial = 0; 
         
         snap.forEach(doc => {
           const val = doc.data()[idField];
-          if (val && val.startsWith(`${prefix}-`)) {
-            const serialPart = val.replace(`${prefix}-`, '');
+          if (val && val.startsWith(searchPrefix)) {
+            // Strip out "STU-2026-" to get the "0001", "0042" part
+            const serialPart = val.replace(searchPrefix, '');
             const num = parseInt(serialPart, 10);
-            if (!isNaN(num) && num > maxSerial) maxSerial = num;
+            if (!isNaN(num) && num > maxSerial) {
+                maxSerial = num;
+            }
           }
         });
         
-        const nextId = `${prefix}-${String(maxSerial + 1).padStart(2, '0')}${suffix}`;
+        // Increment the highest found number by 1, and pad with leading zeros up to 4 digits
+        const nextSequence = String(maxSerial + 1).padStart(4, '0');
+        const nextId = `${searchPrefix}${nextSequence}`; // e.g. STU-2026-0001
+        
         setFormData(prev => ({ ...prev, [idField]: nextId }));
+        
       } catch (err) {
         console.error("Error generating ID:", err);
       }
@@ -178,18 +187,16 @@ const AddProfile = () => {
         const image = await Camera.getPhoto({
           quality: 80,
           allowEditing: false, 
-          resultType: CameraResultType.Base64, // <-- CHANGED to Base64
+          resultType: CameraResultType.Base64, 
           source: CameraSource.Prompt, 
           direction: CameraDirection.Rear, 
         });
         
-        // Safely convert Base64 raw data to a Blob (Bypasses React Router HTML bug)
         const response = await fetch(`data:image/${image.format};base64,${image.base64String}`);
         const blob = await response.blob();
         
         photoFile = new File([blob], `${field}_${Date.now()}.${image.format}`, { type: blob.type });
       } else {
-        // Web Fallback
         const fileInput = document.createElement('input');
         fileInput.type = 'file';
         fileInput.accept = 'image/*,application/pdf';
@@ -577,8 +584,8 @@ const AddProfile = () => {
               <input type="text" name="middleName" value={formData.middleName} placeholder="Middle Name" onChange={handleInputChange} className="input-std" />
               <input type="text" name="lastName" value={formData.lastName} placeholder="Last Name *" required onChange={handleInputChange} className="input-std" />
               
-              <select name="gender" value={formData.gender} required onChange={handleInputChange} className="input-std">
-                <option value="">Select Gender *</option>
+              <select name="gender" value={formData.gender} onChange={handleInputChange} className="input-std">
+                <option value="">Select Gender</option>
                 <option value="Male">Male</option>
                 <option value="Female">Female</option>
                 <option value="Transgender">Transgender</option>
@@ -586,8 +593,8 @@ const AddProfile = () => {
               </select>
 
               <div className="flex flex-col">
-                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Date of Birth *</label>
-                <input type="date" name="dob" value={formData.dob} required onChange={handleInputChange} className="input-std" />
+                <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Date of Birth</label>
+                <input type="date" name="dob" value={formData.dob} onChange={handleInputChange} className="input-std" />
               </div>
               
               <div className="flex flex-col">
@@ -652,7 +659,7 @@ const AddProfile = () => {
               <h2 className="font-black text-gray-700 uppercase text-xs tracking-widest">Address Information</h2>
             </div>
             <div className="p-6 space-y-4">
-              <input type="text" name="address" value={formData.address} placeholder="Full Residential Address *" required onChange={handleInputChange} className="input-std w-full" />
+              <input type="text" name="address" value={formData.address} placeholder="Full Residential Address" onChange={handleInputChange} className="input-std w-full" />
               
               {role === 'Student' && (
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
@@ -759,15 +766,15 @@ const AddProfile = () => {
                   </div>
                   
                   <div className="flex flex-col">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Session *</label>
+                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Session</label>
                     <select name="enrolledSession" value={formData.enrolledSession} onChange={handleSessionChange} className="input-std">
                       {sessions.map(s => <option key={s.id} value={s.id}>{s.sessionName || s.id}</option>)}
                     </select>
                   </div>
 
                   <div className="flex flex-col">
-                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Class *</label>
-                    <select name="enrollmentClass" required value={formData.enrollmentClass} onChange={handleInputChange} className="input-std">
+                    <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Class</label>
+                    <select name="enrollmentClass" value={formData.enrollmentClass} onChange={handleInputChange} className="input-std">
                       <option value="">Select Class</option>
                       {availableClasses.map((c, idx) => <option key={idx} value={c.name}>{c.name}</option>)}
                     </select>
@@ -805,8 +812,8 @@ const AddProfile = () => {
                     <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Employee ID (Auto-Generated) *</label>
                     <input type="text" name="employeeId" value={formData.employeeId} readOnly className="input-std bg-gray-100 text-gray-500 cursor-not-allowed border-dashed" />
                   </div>
-                  <input type="text" name="designation" placeholder="Designation (e.g., PGT Physics) *" required onChange={handleInputChange} className="input-std" />
-                  <input type="text" name="qualification" placeholder="Qualification (e.g., M.Sc, B.Ed) *" required onChange={handleInputChange} className="input-std" />
+                  <input type="text" name="designation" placeholder="Designation (e.g., PGT Physics)" onChange={handleInputChange} className="input-std" />
+                  <input type="text" name="qualification" placeholder="Qualification (e.g., M.Sc, B.Ed)" onChange={handleInputChange} className="input-std" />
                   
                   <div className="flex flex-col">
                      <label className="text-[10px] font-bold text-gray-400 uppercase mb-1 ml-1">Date of Joining</label>
@@ -836,9 +843,9 @@ const AddProfile = () => {
                 <div className="space-y-3">
                     <h3 className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Father's Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                        <input type="text" name="fatherFirstName" value={formData.fatherFirstName} placeholder="First Name *" required onChange={handleInputChange} className="input-std bg-white" />
+                        <input type="text" name="fatherFirstName" value={formData.fatherFirstName} placeholder="First Name" onChange={handleInputChange} className="input-std bg-white" />
                         <input type="text" name="fatherMiddleName" value={formData.fatherMiddleName} placeholder="Middle Name" onChange={handleInputChange} className="input-std bg-white" />
-                        <input type="text" name="fatherLastName" value={formData.fatherLastName} placeholder="Last Name *" required onChange={handleInputChange} className="input-std bg-white" />
+                        <input type="text" name="fatherLastName" value={formData.fatherLastName} placeholder="Last Name" onChange={handleInputChange} className="input-std bg-white" />
                         <input type="tel" name="fatherContact" value={formData.fatherContact} placeholder="Contact No." onChange={handleInputChange} className="input-std bg-white" />
                         <input type="email" name="fatherEmail" value={formData.fatherEmail} placeholder="Email ID (Optional)" onChange={handleInputChange} className="input-std bg-white" />
                         <input type="text" name="fatherOccupation" value={formData.fatherOccupation} placeholder="Occupation" onChange={handleInputChange} className="input-std bg-white" />
@@ -851,9 +858,9 @@ const AddProfile = () => {
                 <div className="space-y-3 border-t pt-6">
                     <h3 className="text-[10px] font-bold uppercase text-gray-400 tracking-wider">Mother's Information</h3>
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                        <input type="text" name="motherFirstName" value={formData.motherFirstName} placeholder="First Name *" required onChange={handleInputChange} className="input-std bg-white" />
+                        <input type="text" name="motherFirstName" value={formData.motherFirstName} placeholder="First Name" onChange={handleInputChange} className="input-std bg-white" />
                         <input type="text" name="motherMiddleName" value={formData.motherMiddleName} placeholder="Middle Name" onChange={handleInputChange} className="input-std bg-white" />
-                        <input type="text" name="motherLastName" value={formData.motherLastName} placeholder="Last Name *" required onChange={handleInputChange} className="input-std bg-white" />
+                        <input type="text" name="motherLastName" value={formData.motherLastName} placeholder="Last Name" onChange={handleInputChange} className="input-std bg-white" />
                         <input type="tel" name="motherContact" value={formData.motherContact} placeholder="Contact No." onChange={handleInputChange} className="input-std bg-white" />
                         <input type="email" name="motherEmail" value={formData.motherEmail} placeholder="Email ID (Optional)" onChange={handleInputChange} className="input-std bg-white" />
                         <input type="text" name="motherOccupation" value={formData.motherOccupation} placeholder="Occupation" onChange={handleInputChange} className="input-std bg-white" />
@@ -899,11 +906,11 @@ const AddProfile = () => {
                             {formData.maritalStatus === 'Married' ? "Spouse Details" : "Emergency Contact Details"}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
-                            <input type="text" name="nokFirstName" placeholder="First Name *" required onChange={handleInputChange} className="input-std bg-white" />
+                            <input type="text" name="nokFirstName" placeholder="First Name" onChange={handleInputChange} className="input-std bg-white" />
                             <input type="text" name="nokMiddleName" placeholder="Middle Name" onChange={handleInputChange} className="input-std bg-white" />
-                            <input type="text" name="nokLastName" placeholder="Last Name *" required onChange={handleInputChange} className="input-std bg-white" />
-                            <input type="tel" name="nokContact" placeholder="Contact Number *" required onChange={handleInputChange} className="input-std bg-white" />
-                            <input type="text" name="nokAddress" placeholder="Residential Address *" required onChange={handleInputChange} className="input-std bg-white md:col-span-4" />
+                            <input type="text" name="nokLastName" placeholder="Last Name" onChange={handleInputChange} className="input-std bg-white" />
+                            <input type="tel" name="nokContact" placeholder="Contact Number" onChange={handleInputChange} className="input-std bg-white" />
+                            <input type="text" name="nokAddress" placeholder="Residential Address" onChange={handleInputChange} className="input-std bg-white md:col-span-4" />
                             <input type="text" name="nokIdType" placeholder="ID Proof Type" onChange={handleInputChange} className="input-std bg-white md:col-span-2" />
                             <input type="text" name="nokIdNo" placeholder="ID Number" onChange={handleInputChange} className="input-std bg-white md:col-span-2" />
                         </div>
